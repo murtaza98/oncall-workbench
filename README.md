@@ -2,19 +2,27 @@
 
 A personal local dashboard for alerts in `#outbound-dlp-alerts` and tickets assigned to you in the active MEP sprint. It reads Slack through the existing `slack` CLI and Jira through `abjira`.
 
-## Run
+## Set up on a Mac
 
-Start this from your **normal laptop terminal** so Claude Code and Codex can write their own session files:
+You need Node.js 20.19+ (20.x) or 22.12+, npm, and access to the Abnormal source checkout and its existing Slack and Jira CLIs. The GitHub CLI (`gh`) supplies linked PR statuses. Install Codex or Claude Code if you want to use its embedded terminal. The app uses the credentials of the person running it. Start it from a **normal laptop terminal**, outside a Codex or Claude session, so its embedded agents can write their session files.
 
 ```bash
+mkdir -p ~/code
+git clone https://github.com/murtaza98/oncall-workbench.git ~/code/mep-oncall-workbench
 cd ~/code/mep-oncall-workbench
-npm install
+npm ci
 npm run dev
 ```
 
-Open <http://127.0.0.1:5173/>. The API binds to `127.0.0.1:4171`. A Codex session's sandbox blocks writes to `~/.claude` and `~/.codex`, so starting `npm run dev` inside Codex will make the embedded agents fail. The app shows a direct error if it detects that restriction.
+Open <http://127.0.0.1:5173/>. Keep the terminal running while you use the app; Ctrl+C stops the server and any embedded agent sessions. The local API uses `127.0.0.1:4171`, so both ports must be free. Click **Refresh alerts** after opening the page, select a work item, and start its investigation terminal when needed.
 
-Slack access uses your existing `abnml_login` session and VPN. Refresh your login or VPN if alert sync fails. The app does not copy CLI credentials.
+The app uses `~/source` by default for its working directory and the Slack/Jira CLIs. Set `SOURCE` before `npm run dev` if your checkout is elsewhere. Codex defaults to `~/.local/bin/codex`; Claude defaults to a `claude` executable beside your Node executable. If either agent is installed elsewhere, set `CODEX_CLI_PATH` or `CLAUDE_CLI_PATH` to its absolute executable path before starting the app. Slack access uses your existing `abnml_login` session and VPN; the app does not copy CLI credentials.
+
+## Update and local data
+
+Finish any running investigations and stop the app before updating; changing backend files while it runs can end embedded terminals. From `~/code/mep-oncall-workbench`, run `git pull` and `npm ci`, then restart `npm run dev`. Your statuses, links, and associated chat IDs live in `data/statuses.json`; pasted screenshots live in `data/attachments/`. Both are ignored by Git and stay on your laptop. Back up the `data/` folder before replacing or deleting your checkout. Each teammate has an independent queue state; this repository does not sync statuses between laptops.
+
+If the alert list cannot load, check that your existing Slack CLI access works, then use **Refresh alerts**. If an embedded terminal cannot start, check its executable path and launch the app from your normal terminal rather than inside an agent sandbox. If a port is already in use, stop the other workbench process before restarting.
 
 ## How it works
 
